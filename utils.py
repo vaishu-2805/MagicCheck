@@ -64,37 +64,99 @@ def detect_unicode_tricks(filename: str) -> bool:
     
     return False
 
+def analyze_archive_contents(filepath: str) -> dict:
+    """
+    Perform detailed analysis of archive contents.
+    Returns a dictionary with analysis results.
+    """
+    results = {
+        "is_malicious": False,
+        "total_files": 0,
+        "suspicious_files": [],
+        "high_entropy_files": [],
+        "nested_archives": [],
+        "path_traversal_attempts": [],
+        "compression_anomalies": [],
+        "file_types": {},
+        "total_size": 0,
+        "compressed_size": 0
+    }
+
+    try:
+        dangerous_exts = {'.exe', '.dll', '.bat', '.cmd', '.ps1', '.vbs', '.js', '.wsf', '.msi', '.scr'}
+        archive_exts = {'.zip', '.rar', '.7z', '.tar', '.gz', '.bz2'}
+        
+        with zipfile.ZipFile(filepath, 'r') as zip_ref:
+            results["total_files"] = len(zip_ref.filelist)
+            
+            for file_info in zip_ref.infolist():
+                filename = file_info.filename.lower()
+                file_ext = os.path.splitext(filename)[1]
+                
+                # Track file types
+                results["file_types"][file_ext] = results["file_types"].get(file_ext, 0) + 1
+                
+                # Track sizes
+                results["total_size"] += file_info.file_size
+                results["compressed_size"] += file_info.compress_size
+                
+                # Check for dangerous files
+                if any(filename.endswith(ext) for ext in dangerous_exts):
+                    results["suspicious_files"].append({
+                        "name": file_info.filename,
+                        "reason": "Dangerous extension"
+                    })
+                
+                # Check for nested archives
+                if any(filename.endswith(ext) for ext in archive_exts):
+                    results["nested_archives"].append(file_info.filename)
+                
+                # Check for path traversal
+                if '../' in file_info.filename or '..\\' in file_info.filename:
+                    results["path_traversal_attempts"].append(file_info.filename)
+                
+                # Check compression ratio
+                if file_info.compress_size > 0:
+                    ratio = file_info.file_size / file_info.compress_size
+                    if ratio > 1000:
+                        results["compression_anomalies"].append({
+                            "name": file_info.filename,
+                            "ratio": ratio
+                        })
+                
+                # Check file entropy
+                try:
+                    data = zip_ref.read(file_info.filename)
+                    entropy = calculate_entropy(data)
+                    if entropy > 7.0 and not any(filename.endswith(ext) for ext in archive_exts):
+                        results["high_entropy_files"].append({
+                            "name": file_info.filename,
+                            "entropy": entropy
+                        })
+                except:
+                    pass  # Skip if we can't read the file
+        
+        # Determine if the archive is potentially malicious
+        results["is_malicious"] = (
+            len(results["suspicious_files"]) > 0 or
+            len(results["path_traversal_attempts"]) > 0 or
+            len(results["compression_anomalies"]) > 0 or
+            (len(results["nested_archives"]) > 3)  # Too many nested archives is suspicious
+        )
+                
+    except zipfile.BadZipFile:
+        return {"error": "Invalid ZIP file"}
+    except Exception as e:
+        return {"error": str(e)}
+        
+    return results
+
 def is_potentially_malicious_archive(filepath: str) -> bool:
     """
     Check if an archive contains potentially malicious files.
     """
-    try:
-        dangerous_exts = {'.exe', '.dll', '.bat', '.cmd', '.ps1', '.vbs', '.js', '.wsf', '.msi', '.scr'}
-        with zipfile.ZipFile(filepath, 'r') as zip_ref:
-            # Check for suspicious files in the archive
-            for file_info in zip_ref.infolist():
-                # Check extensions
-                if any(file_info.filename.lower().endswith(ext) for ext in dangerous_exts):
-                    return True
-                
-                # Check for path traversal attempts
-                if '../' in file_info.filename or '..\\' in file_info.filename:
-                    return True
-                
-                # Check for suspiciously large compression ratios
-                if file_info.compress_size > 0:  # Avoid division by zero
-                    ratio = file_info.file_size / file_info.compress_size
-                    if ratio > 1000:  # Suspicious compression ratio
-                        return True
-                
-    except zipfile.BadZipFile:
-        # Not a valid zip file
-        return False
-    except Exception:
-        # Any other error, better safe than sorry
-        return True
-        
-    return False
+    results = analyze_archive_contents(filepath)
+    return results.get("is_malicious", False) or "error" in results
 
 def scan_directory(directory: str) -> List[str]:
     """

@@ -10,6 +10,7 @@ from utils import (
     detect_double_extension,
     detect_unicode_tricks,
     is_potentially_malicious_archive,
+    analyze_archive_contents,
     scan_directory,
     get_suspicious_patterns
 )
@@ -158,9 +159,12 @@ class MagicCheck:
             entropy = 0.0
 
         # Check archive contents if applicable
-        archive_malicious = False
+        archive_analysis = None
         if self.is_archive_type(actual_type):
-            archive_malicious = is_potentially_malicious_archive(filepath)
+            archive_analysis = analyze_archive_contents(filepath)
+            archive_malicious = archive_analysis.get("is_malicious", False)
+        else:
+            archive_malicious = False
 
         # Determine if file is suspicious (improved logic)
         is_suspicious = False
@@ -242,7 +246,8 @@ class MagicCheck:
             "entropy": entropy,
             "filename_analysis": filename_analysis,
             "high_entropy": high_entropy,
-            "archive_malicious": archive_malicious if actual_type in ['ZIP', 'RAR'] else None
+            "archive_malicious": archive_malicious if actual_type in ['ZIP', 'RAR'] else None,
+            "archive_analysis": archive_analysis
         }
 
 def print_analysis_report(details: dict) -> None:
@@ -283,9 +288,43 @@ def print_analysis_report(details: dict) -> None:
             print(f"- High entropy detected ({details.get('entropy', 0):.2f})")
             print("- This might indicate encryption or packing")
             
-        if details.get('archive_malicious'):
-            print("\n🔍 Archive Analysis:")
-            print("- Suspicious content detected in archive")
+        # Enhanced archive analysis
+        archive_analysis = details.get('archive_analysis')
+        if archive_analysis and not "error" in archive_analysis:
+            print("\n� Archive Content Analysis:")
+            print(f"- Total Files: {archive_analysis.get('total_files', 0)}")
+            print(f"- Total Size: {archive_analysis.get('total_size', 0):,} bytes")
+            print(f"- Compressed Size: {archive_analysis.get('compressed_size', 0):,} bytes")
+            
+            if archive_analysis.get('suspicious_files'):
+                print("\n⚠️ Suspicious Files in Archive:")
+                for file in archive_analysis['suspicious_files']:
+                    print(f"  - {file['name']} ({file['reason']})")
+            
+            if archive_analysis.get('nested_archives'):
+                print("\n📦 Nested Archives:")
+                for archive in archive_analysis['nested_archives']:
+                    print(f"  - {archive}")
+            
+            if archive_analysis.get('path_traversal_attempts'):
+                print("\n⚠️ Path Traversal Attempts:")
+                for path in archive_analysis['path_traversal_attempts']:
+                    print(f"  - {path}")
+            
+            if archive_analysis.get('compression_anomalies'):
+                print("\n⚠️ Compression Anomalies:")
+                for anomaly in archive_analysis['compression_anomalies']:
+                    print(f"  - {anomaly['name']} (Ratio: {anomaly['ratio']:.1f}x)")
+            
+            if archive_analysis.get('high_entropy_files'):
+                print("\n⚠️ High Entropy Files in Archive:")
+                for file in archive_analysis['high_entropy_files']:
+                    print(f"  - {file['name']} (Entropy: {file['entropy']:.2f})")
+            
+            print("\n📊 File Types in Archive:")
+            for ext, count in archive_analysis.get('file_types', {}).items():
+                ext = ext if ext else '(no extension)'
+                print(f"  - {ext}: {count} files")
             
         print("\n⚠️ This file may be potentially dangerous!")
         print("Recommendation: Scan with antivirus before opening.")
