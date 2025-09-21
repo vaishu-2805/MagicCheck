@@ -1,10 +1,20 @@
 # Core dependencies
-colorama>=0.4.6  # For terminal colors
-python-magic>=0.4.27  # For better file type detection
-requests>=2.31.0  # For VirusTotal API integration
+colorama>=0.4.6        # For terminal colors and fancy output
+python-magic>=0.4.27   # For enhanced file type detection
+requests>=2.31.0       # For VirusTotal API integration
+python-magic-bin>=0.4.14  # For Windows systems file type detection
+mimetypes>=0.1.0       # For fallback file type detection
+pillow>=10.0.0         # For advanced image analysis and steganography detection
 
-# Optional dependencies
-# Uncomment if you want to use these features
-# virustotal-api>=1.1.11  # For more advanced VirusTotal integration
-# python-magic-bin>=0.4.14  # For Windows systems that need magic binary
-# pillow>=10.0.0  # For advanced image analysis
+# Analysis dependencies
+pillow>=10.0.0         # For advanced image analysis and steganography detection
+rarfile>=4.0           # For RAR archive analysis
+py7zr>=0.20.5         # For 7zip archive analysis
+pefile>=2023.2.7      # For PE/executable file analysis
+yara-python>=4.3.0     # For malware pattern matching
+
+# Optional features
+virustotal-api>=1.1.11  # For VirusTotal integration
+beautifulsoup4>=4.12.2  # For HTML report generation
+plotly>=5.17.0         # For visualization in HTML reports
+pandas>=2.1.0          # For data analysis and report generation

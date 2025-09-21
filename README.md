@@ -1,123 +1,156 @@
-# MagicCheck
+# MagicCheck - Advanced File Analysis Tool
 
-A comprehensive security tool that detects suspicious files through magic bytes analysis, archive inspection, and various anti-obfuscation checks.
+## Overview
 
-## Problem Statement
-
-Hackers often use various techniques to disguise malicious files:
-
-- Changing file extensions (e.g., `virus.exe` → `photo.jpg`)
-- Using double extensions (e.g., `document.pdf.exe`)
-- Employing Unicode tricks (e.g., using look-alike characters)
-- Hiding malware in archives
-- Using encryption/packing to obfuscate content
-
-While operating systems and users may trust files based on their extensions, the true file type is determined by the file's magic bytes (headers). This creates multiple security risks that this tool helps identify.
+MagicCheck is a sophisticated file analysis tool designed to detect suspicious and potentially malicious files through multiple analysis techniques. It combines file signature analysis, entropy calculation, steganography detection, and various heuristic checks to provide a comprehensive security assessment.
 
 ## Features
 
-### Basic File Analysis
+### Core Features
 
-- ✅ Detects file type by reading magic bytes (first few bytes)
-- ✅ Compares actual file type with claimed extension
-- ✅ Generates SHA256 hash for malware database checks
-- ✅ Supports many file types (JPG, PNG, PDF, EXE, ZIP, etc.)
+- Advanced file type detection using magic numbers and multiple fallbacks
+- Entropy analysis with type-specific thresholds
+- Enhanced steganography detection in images
+- Advanced image analysis with format-specific checks
+- Archive content analysis (ZIP, RAR, 7z)
+- Suspicious pattern detection
+- Granular risk scoring system (0-100)
 
-### Advanced Security Checks
+### Analysis Capabilities
 
-- ✅ Double extension detection (e.g., `.jpg.exe`)
-- ✅ Unicode manipulation detection
-- ✅ Entropy analysis for packed/encrypted content
-- ✅ Suspicious pattern detection
+- File type verification and mismatch detection
+- Advanced image analysis and steganography detection
+- Hidden data detection after EOF markers
+- Granular compression ratio analysis
+- Deep binary content analysis
+- Base64 and encoded content detection
+- Known malicious pattern matching
 
-### Archive Analysis
+### Enhanced Image Analysis
 
-- ✅ Scans archive contents (ZIP, RAR, etc.)
-- ✅ Detects suspicious files inside archives
-- ✅ Identifies nested archives
-- ✅ Checks for path traversal attempts
-- ✅ Analyzes compression ratios
-- ✅ Reports file type distribution
-- ✅ Entropy checking of archive contents
+- Format-specific validation (PNG, JPEG, GIF)
+- Image dimension verification
+- Color channel entropy analysis
+- LSB steganography detection
+- Size consistency checks
+- Anomaly detection in metadata
+- Header and marker validation
 
-### Batch Processing
+### Visualization and Reporting
 
-- ✅ Single file analysis
-- ✅ Recursive directory scanning
-- ✅ Detailed reporting for each file
+- Colorized CLI output with risk levels
+- Detailed scan summaries with percentages
+- Multiple report formats (JSON, CSV)
+- Risk score breakdown
+
+## Installation
+
+1. Clone the repository:
+
+```bash
+git clone https://github.com/yourusername/MagicCheck.git
+cd MagicCheck
+```
+
+2. Install dependencies:
+
+```bash
+pip install -r requirements.txt
+```
+
+For Windows users, additional magic binary might be needed:
+
+```bash
+pip install python-magic-bin
+```
 
 ## Usage
 
-1. Run the script:
+### Basic Usage
+
+Run the script and follow the interactive menu:
 
 ```bash
 python magic_check.py
 ```
 
-2. Choose scan type:
+### Menu Options
 
-   - Single file analysis
-   - Directory scanning (recursive)
+1. Scan a single file
+2. Scan a directory
+3. Exit
 
-3. Enter the path to analyze.
+### Report Formats
 
-4. The tool provides comprehensive analysis including:
-   - Basic file information (size, type, hash)
-   - Extension verification
-   - Suspicious pattern detection
-   - Archive content analysis
-   - Entropy measurements
-   - Detailed security warnings
+Reports are automatically generated in:
 
-### Archive Scanning Details
+- JSON format (.json)
+- CSV format (.csv)
 
-When scanning archives, the tool reports:
+## Risk Score System
 
-- Total number of files
-- Size statistics (original/compressed)
-- List of suspicious files
-- Nested archive detection
-- Path traversal attempts
-- Compression anomalies
-- High-entropy file detection
-- File type distribution
+| Score Range | Risk Level | Description                            |
+| ----------- | ---------- | -------------------------------------- |
+| 0-20        | Safe       | No suspicious indicators found         |
+| 21-50       | Warning    | Some suspicious elements detected      |
+| 51-100      | Dangerous  | Multiple suspicious indicators present |
 
-## Supported File Types
+## Detection Methods
 
-### Basic File Types
+### File Analysis
 
-- Images: JPG/JPEG, PNG, GIF
-- Documents: PDF, DOC/DOCX, XLS/XLSX
-- Executables: EXE, DLL, ELF
-- Archives: ZIP, RAR, 7Z, TAR, GZIP
+- Magic number verification
+- Entropy calculation
+- Extension mismatch detection
+- Hidden data detection
+- Base64 content detection
+- Pattern analysis
+
+### Image Analysis
+
+- Format validation
+- Entropy analysis
+- Metadata checks
+- Steganography detection
+- Dimension verification
 
 ### Archive Analysis
 
-Performs deep inspection of archive contents with:
-
-- Executable detection (.exe, .dll, .bat, etc.)
-- Script file detection (.ps1, .vbs, .js, etc.)
-- Nested archive analysis
 - Compression ratio verification
-- Entropy analysis of contents
+- Nested archive detection
+- Content size validation
+- Format-specific checks
 
-## Security Notes
+## Supported File Types
 
-1. This tool provides preliminary analysis but should not be your only security measure
-2. Always use comprehensive antivirus software
-3. Be especially careful with:
-   - Files having multiple extensions
-   - Archives containing executables
-   - Files with unusually high entropy
-   - Files using Unicode tricks
+### Common Types
+
+- Images: JPG/JPEG, PNG, GIF
+- Documents: PDF, DOC/DOCX, XLS/XLSX
+- Executables: EXE, DLL
+- Archives: ZIP, RAR, 7Z
 
 ## Requirements
 
-- Python 3.x
-- Standard library modules:
-  - os
-  - struct
-  - hashlib
-  - zipfile
-  - math
-  - re
+### Core Dependencies
+
+- Python 3.8+
+- colorama: Terminal colors
+- python-magic: Enhanced file type detection
+- Additional requirements in requirements.txt
+
+## Sample Files
+
+The repository includes:
+
+- img.png: Sample image file for testing image analysis
+- anomalous_sample.zip: Sample archive for testing archive analysis
+
+## Security Notes
+
+1. MagicCheck is a supplementary analysis tool, not a replacement for antivirus software
+2. Exercise caution with files showing:
+   - Hidden data after EOF
+   - Abnormal entropy levels
+   - Steganography indicators
+   - Suspicious patterns

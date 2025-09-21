@@ -171,12 +171,15 @@ def scan_directory(directory: str) -> List[str]:
 
 def get_suspicious_patterns() -> Set[str]:
     """
-    Return a set of suspicious filename patterns.
+    Return a set of suspicious filename patterns focused on actual security threats.
     """
     return {
-        r'\.exe\.',  # Hidden executable extension
-        r'\.{2,}',   # Multiple dots
-        r'\s{2,}',   # Multiple spaces
-        r'[^a-zA-Z0-9\s\.-]',  # Special characters
-        r'\.(exe|dll|bat|cmd|ps1|vbs|js|wsf|msi|scr)$'  # Dangerous extensions
+        r'\.exe\.[^.]+$',  # Hidden executable after another extension
+        r'\.(exe|bat|cmd|ps1|vbs|js|wsf|msi|scr)\.',  # Dangerous extension not at end
+        r'_(exe|dll|bat|cmd|ps1|vbs|js|msi|scr)\.', # Attempted extension hiding
+        r'[<>|&;$()]',  # Shell special characters
+        r'\\\\+[^\\]',  # Multiple backslashes (path traversal attempt)
+        r'\.\.|~\$',    # Path traversal or temp file markers
+        r'encrypted|passwd|credentials', # Sensitive data indicators
+        r'exploit|payload|malware|virus|trojan|backdoor',  # Obvious malicious terms
     }

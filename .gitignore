@@ -46,12 +46,30 @@ ENV/
 magiccheck_report_*.json
 magiccheck_report_*.csv
 magiccheck_report_*.html
+magiccheck_report_*.pdf
 *.log
+.magiccheck_cache/
+.vt_api_key
+.env
+reports/
+temp/
+samples/
+extracted_payloads/    # Directory for extracted payloads from stego detection
+
+# Test and sample files
+test_files/
+sample_files/
+suspicious_samples/
+malware_samples/
+*.test.*
+*.sample.*
 
 # OS specific
 .DS_Store
 Thumbs.db
 desktop.ini
+$RECYCLE.BIN/
+System Volume Information/
 
 # Test files
 test_files/
