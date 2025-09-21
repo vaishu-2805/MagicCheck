@@ -1,0 +1,10 @@
+# Core dependencies
+colorama>=0.4.6  # For terminal colors
+python-magic>=0.4.27  # For better file type detection
+requests>=2.31.0  # For VirusTotal API integration
+
+# Optional dependencies
+# Uncomment if you want to use these features
+# virustotal-api>=1.1.11  # For more advanced VirusTotal integration
+# python-magic-bin>=0.4.14  # For Windows systems that need magic binary
+# pillow>=10.0.0  # For advanced image analysis

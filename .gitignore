@@ -1,0 +1,65 @@
+# Python
+__pycache__/
+**/__pycache__/
+**/*.py[cod]
+**/*.pyc
+**/*.pyo
+**/*.pyd
+*$py.class
+.pytest_cache/
+.coverage
+coverage.xml
+*.cover
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+venv/
+env/
+ENV/
+.env/
+.venv/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Project specific
+magiccheck_report_*.json
+magiccheck_report_*.csv
+magiccheck_report_*.html
+*.log
+
+# OS specific
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Test files
+test_files/
+sample_files/
+*.test.*
+
+# Sensitive data
+*.key
+*.pem
+config.ini
+secrets.json
