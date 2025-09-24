@@ -2,7 +2,10 @@ import math
 import os
 import zipfile
 import re
-from typing import List, Set
+from typing import List, Set, Dict, Any, Optional
+from datetime import datetime
+import json
+import csv
 
 def calculate_entropy(data: bytes) -> float:
     """Calculate Shannon entropy of byte data."""
@@ -183,3 +186,150 @@ def get_suspicious_patterns() -> Set[str]:
         r'encrypted|passwd|credentials', # Sensitive data indicators
         r'exploit|payload|malware|virus|trojan|backdoor',  # Obvious malicious terms
     }
+
+class SuspicionScorer:
+    @staticmethod
+    def score_file(filepath: str, file_type: str, entropy: float) -> tuple[float, list[str]]:
+        """Calculate suspicion score and reasons for a file."""
+        score = 0.0
+        reasons = []
+        
+        # Basic checks
+        if file_type in ['EXE', 'DLL', 'SCR']:
+            if entropy > 7.0:
+                score += 0.5
+                reasons.append(f"High entropy ({entropy:.2f}) executable")
+                
+        # Add more scoring logic as needed
+        
+        return score, reasons
+
+class EnhancedFileTypeDetector:
+    def __init__(self):
+        self.type_signatures = {
+            b'\x4D\x5A': 'EXE',
+            b'\x7F\x45\x4C\x46': 'ELF',
+            b'\x89\x50\x4E\x47': 'PNG',
+            b'\xFF\xD8\xFF': 'JPEG',
+            # Add more signatures as needed
+        }
+    
+    def detect_type(self, data: bytes) -> str:
+        """Detect file type from binary data."""
+        for sig, ftype in self.type_signatures.items():
+            if data.startswith(sig):
+                return ftype
+        return "Unknown"
+
+class DirectoryScanSummary:
+    def __init__(self):
+        self.total_files = 0
+        self.suspicious_files = 0
+        self.safe_files = 0
+        self.errors = 0
+        
+    def add_result(self, result: dict):
+        """Add a scan result to the summary."""
+        self.total_files += 1
+        if result.get('is_suspicious'):
+            self.suspicious_files += 1
+        else:
+            self.safe_files += 1
+
+class ReportExporter:
+    @staticmethod
+    def to_json(results: List[Dict], filepath: str):
+        """Export results to JSON format."""
+        with open(filepath, 'w') as f:
+            json.dump(results, f, indent=2)
+    
+    @staticmethod
+    def to_csv(results: List[Dict], filepath: str):
+        """Export results to CSV format."""
+        if not results:
+            return
+            
+        headers = ['filepath', 'filename', 'filesize', 'actual_type', 'risk_level', 'reasons', 'sha256']
+        with open(filepath, 'w', newline='') as f:
+            writer = csv.DictWriter(f, fieldnames=headers)
+            writer.writeheader()
+            for result in results:
+                row = {k: str(result.get(k, '')) for k in headers}
+                writer.writerow(row)
+                
+    @staticmethod
+    def to_html(results: List[Dict], filepath: str):
+        """Export results to HTML format."""
+        if not results:
+            return
+            
+        html_template = '''<!DOCTYPE html>
+<html>
+<head>
+    <title>MagicCheck Scan Report</title>
+    <style>
+        body {{ font-family: Arial, sans-serif; margin: 20px; }}
+        table {{ border-collapse: collapse; width: 100%; }}
+        th, td {{ border: 1px solid #ddd; padding: 8px; text-align: left; }}
+        th {{ background-color: #f5f5f5; }}
+        .safe {{ color: green; }}
+        .suspicious {{ color: red; }}
+        .summary {{ margin: 20px 0; padding: 10px; background-color: #f9f9f9; }}
+    </style>
+</head>
+<body>
+    <h1>MagicCheck Scan Report</h1>
+    <div class="summary">
+        <h2>Summary</h2>
+        <p>Total Files: {total}</p>
+        <p>Safe Files: <span class="safe">{safe}</span></p>
+        <p>Suspicious Files: <span class="suspicious">{suspicious}</span></p>
+        <p>Scan Date: {date}</p>
+    </div>
+    <h2>Detailed Results</h2>
+    <table>
+        <tr>
+            <th>Filename</th>
+            <th>Type</th>
+            <th>Size</th>
+            <th>Risk Level</th>
+            <th>Reasons</th>
+        </tr>
+        {rows}
+    </table>
+</body>
+</html>'''
+        # Generate statistics
+        total = len(results)
+        safe = sum(1 for r in results if r['risk_level'] == 'Safe')
+        suspicious = total - safe
+        
+        # Generate table rows
+        rows = []
+        for result in results:
+            reason_list = result.get('reasons', [])
+            reasons = "<br>".join(reason_list) if reason_list else "None"
+            risk_class = 'suspicious' if result['risk_level'] == 'Suspicious' else 'safe'
+            
+            row = f"""
+            <tr>
+                <td>{result['filename']}</td>
+                <td>{result['actual_type']}</td>
+                <td>{result['filesize']:,} bytes</td>
+                <td class="{risk_class}">{result['risk_level']}</td>
+                <td>{reasons}</td>
+            </tr>"""
+            rows.append(row)
+            
+        # Fill template
+        formatted_html = html_template.format(
+            total=total,
+            safe=f"{safe} ({safe/total*100:.1f}%)",
+            suspicious=f"{suspicious} ({suspicious/total*100:.1f}%)",
+            date=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            rows="\n".join(rows)
+        )
+        
+        # Write to file
+        with open(filepath, 'w') as f:
+            f.write(formatted_html)

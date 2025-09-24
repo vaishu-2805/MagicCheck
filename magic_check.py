@@ -14,14 +14,12 @@ from utils import (
     is_potentially_malicious_archive,
     analyze_archive_contents,
     scan_directory,
-    get_suspicious_patterns
-)
-from enhanced_utils import (
+    get_suspicious_patterns,
     SuspicionScorer,
     EnhancedFileTypeDetector,
-    DirectoryScanSummary
+    DirectoryScanSummary,
+    ReportExporter
 )
-from report_utils import ReportExporter
 
 try:
     from colorama import init, Fore, Style
